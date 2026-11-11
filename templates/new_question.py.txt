@@ -1,0 +1,54 @@
+"""Replace this description with the research question this script answers."""
+
+from pathlib import Path
+import os
+import sys
+
+import pandas as pd
+
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_DIR))
+
+from Output.JournalTable import journal_table
+# Add this import when the question needs a horizontal chart:
+# from Output.JournalHChart import journal_h_chart
+
+
+# Read the source survey without changing it. The next two CSV rows contain
+# Qualtrics metadata, as in the existing questions.
+survey = pd.read_csv(
+    Path(os.environ.get('WEARABLE_SURVEY_CSV', 'private/survey.csv')),
+    skiprows=[1, 2],
+    dtype=str,
+)
+
+# Replace this example analysis with the filters and calculations for your
+# research question. Use plain integer values in count columns so the shared
+# helper can calculate the rightmost Total column and bottom Total row.
+answer = pd.DataFrame(
+    [{"Group": "Example", "Count": len(survey)}]
+)
+
+report = journal_table(
+    data=answer,
+    title="Replace with your table title",
+    percentage_denominators=len(survey),
+    note="Counts are n (% of survey responses). Replace with your actual denominator definition.",
+)
+
+# A second table belongs in the same Word report:
+# journal_table(
+#     data=another_answer,
+#     title="Second table title",
+#     word_document=report.attrs["word_output_path"],
+# )
+
+# A chart can also be embedded in this exact Word report:
+# journal_h_chart(
+#     data=chart_data,
+#     category="Group",
+#     value="Percent",
+#     title="Chart title",
+#     filename="Chart_file_name",
+#     word_document=report.attrs["word_output_path"],
+# )

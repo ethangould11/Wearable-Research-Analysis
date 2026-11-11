@@ -1,0 +1,18 @@
+# Deny every file unless explicitly approved below. Generated outputs and any
+# private inputs remain ignored even when placed beside the public code.
+*
+!.gitignore
+!README.md
+!PRIVACY.md
+!requirements.txt
+!generate_reports.py
+!Analysis/
+!Analysis/review_q2_q4.py
+!Questions/
+!Questions/*.py
+!Output/
+!Output/JournalTable.py
+!Output/JournalHChart.py
+!Output/JournalComparisonChart.py
+!templates/
+!templates/new_question.py.txt
