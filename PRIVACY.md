@@ -1,7 +1,9 @@
 # Publication boundary
 
-This initial publication contains source code, method descriptions and broad
-category definitions. It includes no observed results or participant data.
+This publication contains source code, methods, broad category definitions,
+and four pooled feature-use percentage bands on `RESULTS.md`. These bands
+describe observed overall usage while withholding exact counts, sample sizes,
+brand breakdowns and demographic combinations. No participant data are included.
 
 Excluded material includes raw and cleaned datasets, respondent subsets,
 response identifiers, IP addresses, contact information, dates, location data,
@@ -11,8 +13,10 @@ PDFs, archives, editor settings and credentials. No source-file link is provided
 
 Removing names alone does not make respondent data anonymous. Detailed counts
 and cross-tabulations can expose small groups, so they are excluded from this
-release as well. No claim of a universal anonymity guarantee is made; the
-publication boundary avoids releasing study observations entirely.
+release as well. The pooled overview uses broad ten-percentage-point bands
+and minimum underlying group-size checks. These measures reduce disclosure
+exposure; they do not constitute a formal anonymity guarantee. Individual
+records and detailed observations are never released.
 
 The default-deny `.gitignore` admits only the documented code and documentation
 paths. Do not use `git add --force` for data, outputs or archives. Private input

@@ -1,71 +1,105 @@
+<div align="center">
+
 # Wearable Research Analysis
 
-Python analysis and report-generation structure for a wearable-device survey.
-This repository contains code and broad survey categories only. Research data,
-results, charts, reports, participant records and input-file links are excluded.
-The code describes the methods; it cannot reproduce the study results without
-separately authorized private data.
+**Understanding wearable use, feature preferences, and attitudes toward health technology**
 
-## Questions
+Python analysis · Survey research · Reproducible methods · Privacy-conscious reporting
 
-| Question | Comparison |
-| --- | --- |
-| 1 | Wearable device brand distribution |
-| 2 | Wearable brands by self-rated athletic ability |
-| 3 | Wearable brands by self-reported gender |
-| 4 | Frequently used features by wearable brand |
-| 5 | Attitude agreement by wearable brand |
-| 6 | Feature usage and wearable attitudes |
-| 7 | Composite health score use and wearable attitudes |
-| 8 | Composite health score use and device-wearing frequency |
+[Results overview](RESULTS.md) · [Research methods](docs/METHODS.md) · [Privacy](PRIVACY.md) · [Analysis code](Questions/)
 
-The existing Question 5 filename retains its `NU` marker. All eight question
-scripts are included. Category definitions are survey options, not a claim
-that any participant selected an option.
+</div>
 
-## Structure
+## About the project
 
-- `Questions/`: the eight analysis entry points.
-- `Analysis/review_q2_q4.py`: cleaning, recalculation and reconciliation for Questions 2–4.
-- `Output/Journal*.py`: shared Word table and chart formatting helpers.
-- `generate_reports.py`: runs the questions and verifies created or updated reports.
-- `templates/`: starting point for an additional question.
+This project explores how people use wearable devices and how device choices,
+self-rated athletic ability, feature use, and health-technology attitudes relate
+within a survey sample. Eight analyses cover device adoption, frequently used
+features, composite health scores, and attitudes toward wearable feedback.
 
-## Methods
+The repository presents the analytical structure and a limited public results
+overview. Detailed respondent data and subgroup reports remain private.
 
-Questions 2–4 inspect export metadata, blank rows, duplicate records, eligibility,
-missingness and invalid option values. Valid Other selections are retained.
-Missing answers are not imputed. Checks reconcile counts with the input records
-and verify that reading the source has not changed its bytes.
+> **Start with the [results overview](RESULTS.md).** It presents broad observed
+> findings, explains what they mean, and identifies which comparisons are kept
+> private to protect small groups.
 
-Questions 2–3 use stacked brand-selection counts. Athletic ability is ordered
-Beginner, Recreational, Competent, Advanced, Elite. Question 4 includes a count
-chart and a 100% stacked chart with brands on the horizontal axis and features
-in the legend. The latter divides each feature count by the sum of feature
-selections for that brand. It describes a share of feature selections.
-Multiple brand and feature selections can overlap; device-specific feature
-attribution is unavailable for respondents selecting several brands.
+## Research questions
 
-Questions 1 and 5–8 retain their existing processing. Questions 5 and 7 combine
-somewhat agree and strongly agree for descriptive agreement tables. Their
-denominators are people in the relevant group who answered the statement.
-Question 6 uses Mann–Whitney comparisons; Question 7 uses Kruskal–Wallis tests;
-the scripts apply Benjamini–Hochberg adjustment across attitude comparisons.
-Question 8 uses within-frequency-group percentages. These are observational
-survey comparisons and do not establish causation.
+| | Focus | What the analysis examines |
+| :---: | --- | --- |
+| **Q1** | Device use | Distribution of wearable brands |
+| **Q2** | Athletic ability | Ability composition within each wearable brand |
+| **Q3** | Gender | Gender composition within each wearable brand |
+| **Q4** | Feature use | Frequently used features within each wearable brand |
+| **Q5** | Attitudes by brand | Agreement with wearable attitude statements |
+| **Q6** | Features and attitudes | Attitude scores among feature users and nonusers |
+| **Q7** | Composite health scores | Score use and agreement with wearable attitudes |
+| **Q8** | Wearing frequency | Score use across device-wearing frequency groups |
 
-## Authorized local use
+## How to read the figures
 
-Install Python dependencies with `python3 -m pip install -r requirements.txt`.
-Set `WEARABLE_SURVEY_CSV` to an authorized local Qualtrics export. The code
-expects the survey column schema used in the scripts; no dataset or download
-link is supplied. For example, after setting that environment variable:
+Local Q2–Q4 percentage figures use a consistent layout: **wearable brands on
+the horizontal axis, categories in the legend, and bars totaling 100%.**
+
+| Figure | What 100% represents | What a segment represents |
+| --- | --- | --- |
+| Q2 | Usable athletic-ability respondents within a brand | Share in an ability category |
+| Q3 | Usable gender respondents within a brand | Share in a gender category |
+| Q4 | All counted feature selections within a brand | Share assigned to a feature |
+
+Respondents could select several brands and features. A person can contribute
+to several brand bars. Equal-height bars support composition comparisons;
+they do not equalize sample sizes or remove sampling bias. Detailed figures
+and their sample sizes are generated locally and excluded from GitHub.
+
+## Project map
+
+```text
+Wearable-Research-Analysis/
+├── README.md                   Project introduction
+├── RESULTS.md                  Limited public findings
+├── PRIVACY.md                  Publication boundaries
+├── docs/METHODS.md             Definitions, denominators, limitations
+├── Questions/                  All eight analysis entry points
+├── Analysis/                   Cleaning, validation, pooled-summary methods
+├── Output/Journal*.py          Shared chart and Word-table formatting
+├── templates/                  Template for an additional question
+├── generate_reports.py        Batch report generator
+└── requirements.txt            Python dependencies
+```
+
+## Methods and reproducibility
+
+Questions 2–4 use respondent-level cleaning, explicit missing-value checks,
+duplicate checks, and independent count reconciliation. Valid Other responses
+are retained. Missing answers are never imputed. Python produces editable
+Word tables and matching chart images using shared formatting helpers.
+
+Questions 5–8 include descriptive agreement tables and exploratory ordinal
+comparisons. The [methods page](docs/METHODS.md) explains the question-specific
+denominators, statistical procedures, and limits of interpretation.
+
+### Run with authorized private data
 
 ```bash
+python3 -m pip install -r requirements.txt
+export WEARABLE_SURVEY_CSV="/path/to/authorized-local-survey.csv"
 python3 Analysis/review_q2_q4.py --data-only
 python3 generate_reports.py
 ```
 
-Generated `Data/` files and `Output/` artifacts are confidential local products.
-Questions 2–4 update their current report; other questions create numbered
-copies when needed. See [PRIVACY.md](PRIVACY.md) before adding any repository files.
+The input must follow the survey schema defined in the scripts. No dataset or
+download link is supplied. Generated data, reports, and figures remain local.
+Q2–Q4 update their current reports; other questions retain numbered copies.
+
+## Responsible interpretation
+
+These are descriptive and exploratory survey analyses. Self-reported usage
+does not measure clinical benefit, validate device accuracy, or establish
+causation. Small brand groups make some local percentages unstable. Public
+findings are pooled and coarsened; they are not population estimates.
+
+**Privacy is part of the project structure.** The repository excludes source
+records, identifiers, free text, detailed cross-tabulations, and report files.
+See the [publication policy](PRIVACY.md) for the exact boundary.

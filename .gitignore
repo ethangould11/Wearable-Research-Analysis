@@ -4,10 +4,14 @@
 !.gitignore
 !README.md
 !PRIVACY.md
+!RESULTS.md
 !requirements.txt
 !generate_reports.py
 !Analysis/
 !Analysis/review_q2_q4.py
+!Analysis/public_summary.py
+!docs/
+!docs/METHODS.md
 !Questions/
 !Questions/*.py
 !Output/

@@ -210,6 +210,18 @@ def save_data(bundle, results):
         result['rows'][columns].to_csv(f'{prefix}_respondents.csv', index=False)
         result['summary'].to_csv(f'{prefix}_summary.csv', index=False)
         result['counts'].to_csv(f'{prefix}_counts.csv', index_label='series')
+        if result['question'] in (2, 3):
+            by_brand = result['counts'].T
+            brand_ns = by_brand.sum(axis=0)
+            shares = by_brand.div(brand_ns.replace(0, np.nan), axis=1) * 100
+            np.testing.assert_allclose(shares.sum(axis=0), np.full(len(brand_ns), 100.0))
+            composition = pd.DataFrame([
+                {'wearable_brand': brand, 'category': category,
+                 'respondent_count': int(by_brand.loc[category, brand]),
+                 'usable_brand_respondents': int(brand_ns[brand]),
+                 'percentage_within_brand': shares.loc[category, brand]}
+                for brand in by_brand for category in by_brand.index])
+            composition.to_csv(f'{prefix}_brand_composition.csv', index=False)
         if result['question'] == 4:
             brand_totals = result['counts'].sum(axis=0)
             shares = result['counts'].div(brand_totals.replace(0, np.nan), axis=1) * 100
@@ -247,16 +259,20 @@ def save_data(bundle, results):
                       else 'Respondents selecting the brand who also provided usable Q12 feature selections.')
         lines += [f"- Q{n}: {len(result['rows'])} usable respondents; {len(bundle['current']) - len(result['rows'])} excluded from this question. {definition}",
                   '  Group sample sizes: ' + '; '.join(f'{k} n={v}' for k, v in result['denominators'].items()) + '.']
+        if n in (2, 3):
+            lines += ['  Within-brand chart denominators (respondents): ' + '; '.join(
+                f'{brand} n={int(result["counts"].loc[brand].sum())}'
+                for brand in result['counts'].index) + '.']
     lines += ['', 'Question exclusion reasons in question_exclusions.csv may overlap within a respondent. Use unique records for exclusion totals.',
               'Counts are recalculated from respondent rows. Every summary cell is independently reconciled to the original CSV using a record loop.',
-              'Tables show integer counts. Q2–Q3 charts show counts; Q4 also has a 100% stacked chart. Its denominator is the sum of counted feature selections for that wearable brand, so each brand bar sums to 100%. These are shares of selections, not respondents.',
-              'Group sample sizes are shown under the bars and in the corresponding table headers.', '',
+              'Tables show integer counts. Q2–Q3 charts show within-brand respondent composition: category count divided by respondents selecting that brand with a usable group answer. Each brand sums to 100%. Multiple brands allow overlap between bars. Q4 retains its count chart and a 100% stacked chart whose denominator is counted feature selections within the brand. Q4 percentages describe selections, not respondents.',
+              'Table headers show usable respondent sample sizes. Q2–Q3 chart n values match their brand columns. Q4 percentage-chart n values instead count feature selections.', '',
               '## Findings and limitations', '']
     lines += [f'- {k.replace("_", " ")}: {v}.' for k, v in bundle['profile'].items()]
     lines += ['',
               'Q4 features are respondent-level selections and cannot be attributed to a specific device for people selecting multiple brands.',
               'Full survey choice definitions for unobserved gender values are not supplied; unfamiliar future labels are flagged for review, not recoded.',
-              'These are descriptive counts. Group-size differences affect bar heights; counts do not correct for sampling bias.', '',
+              'These are descriptive results. Equal-height percentage bars do not correct sampling bias or the uncertainty of small brand groups.', '',
               'Reproduce: `python3 Analysis/review_q2_q4.py`. Validate/recalculate data only: `python3 Analysis/review_q2_q4.py --data-only`.', '']
     (DATA / 'CLEANING_SUMMARY.md').write_text('\n'.join(lines))
 
@@ -265,13 +281,17 @@ def create_report(bundle, result):
     from Output.JournalTable import journal_table
     from Output.JournalComparisonChart import journal_comparison_chart
     number = result['question']
-    header_map = {group: f'{group}\n(n={denominator})' for group, denominator in result['denominators'].items()}
-    counts = result['counts'].rename(columns=header_map)
-    counts.index.name = 'Wearable device' if number in (2, 3) else 'Frequently used feature'
+    table_counts = result['counts'].T if number in (2, 3) else result['counts']
+    table_ns = table_counts.sum(axis=0) if number in (2, 3) else result['denominators']
+    header_map = {group: f'{group}\n(n={denominator})' for group, denominator in table_ns.items()}
+    counts = table_counts.rename(columns=header_map)
+    counts.index.name = ('Self-rated athletic ability' if number == 2 else
+                         'Self-reported gender' if number == 3 else 'Frequently used feature')
     if number in (2, 3):
-        note = ('Cells show respondent counts with usable group and brand answers. '
-                'Multiple wearable brands could be selected. Stack heights and totals count brand selections, '
-                'not unique respondents. ')
+        note = ('Cells show respondent counts with usable group and brand answers. The chart divides each '
+                'category count by the usable respondents in that brand column, so each bar totals 100%. '
+                'The same respondent may select multiple brands and appear in several columns. '
+                'Totals across brands count brand selections rather than unique respondents. ')
     else:
         note = ('Cells show counts of respondents selecting both the brand and feature, among those with usable paired answers. '
                 'Multiple brands and features could be selected. Stack heights and totals count selections, '
@@ -293,8 +313,8 @@ def create_report(bundle, result):
     document = Document(document_path)
     assert len(document.tables) == 1 and len(document.inline_shapes) == (2 if number == 4 else 1)
     for row_number, series in enumerate(counts.index, 1):
-        for column_number, group in enumerate(result['counts'].columns, 1):
-            count = result['counts'].loc[series, group]
+        for column_number, group in enumerate(table_counts.columns, 1):
+            count = table_counts.loc[series, group]
             expected = f'{count:,}'
             assert document.tables[0].cell(row_number, column_number).text == expected
     return str(document_path)
